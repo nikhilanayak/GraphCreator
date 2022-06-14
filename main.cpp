@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include <map>
 
 typedef struct Node Node;
@@ -180,19 +181,46 @@ void print_adj(adjacency_t*& adj_list){
 int addNode(int** adj, Vertex** nodeList, int& numNodes, char* label){
 	nodeList[numNodes++] = new Vertex(label);
 	return numNodes;
-
 }
 
-void addEdge(int** adj, Vertex** nodeList, int& numNodes, int nodeA, int nodeB, int weight){
+void removeNode(int** adj, int& numNodes, Vertex** nodes, int nodeNum){
+	std::cout << "\n";
+	for(int i = 0; i < numNodes; i++){
+		adj[i][nodeNum] = 0;
+		adj[nodeNum][i] = 0;
+	}
+
+	for(int i = 0; i < 20; i++){
+		adj[nodeNum][i] = adj[numNodes - 1][i];
+		adj[i][nodeNum] = adj[i][numNodes - 1];
+		adj[numNodes-1][i] = 0;
+	}
+
+	nodes[nodeNum] = nodes[numNodes - 1];
+	nodes[numNodes-1] = NULL;
+
+	numNodes--;
+}
+
+
+void setEdge(int** adj, Vertex** nodeList, int& numNodes, int nodeA, int nodeB, int weight){
 	adj[nodeA][nodeB] = weight;
 	adj[nodeB][nodeA] = weight;	
 }
 
 
-void print_adj(int**& adj, int& numNodes){
+void print_adj(int**& adj, int& numNodes, Vertex** nodeList){
+	printf("%10s ", "");
 	for(int i = 0; i < numNodes; i++){
+		printf("%10s", nodeList[i]->label);
+	}
+	printf("\n");
+
+	for(int i = 0; i < numNodes; i++){
+		printf("%10s ", nodeList[i]->label);
 		for(int j = 0; j < numNodes; j++){
-			std::cout << adj[i][j] << " ";
+			printf("%10i", adj[i][j]);
+			//std::cout << adj[i][j] << " ";
 		}
 		std::cout << "\n";
 	}
@@ -214,11 +242,122 @@ int main(){
 
 	Vertex* nodeList[20];
 
-	int a  = addNode(adjacencyMatrix, nodeList, numNodes, (char*)"a");
-	int b  = addNode(adjacencyMatrix, nodeList, numNodes, (char*)"b");
 
-	addEdge(adjacencyMatrix, nodeList, numNodes, 0, 1, 100);
+	while(1){
+		std::cout << "Enter Command(V=Create Vertex, E=Create Edge, X=Remove Vertex, Y=Remove Edge, A=Adjancency Matrix): ";
+		char cmd;
+		std::cin >> cmd;
+		switch(cmd){
+			case 'V': {
+				std::cout << "Vertex name: ";
+				char* name = new char[256];
+				std::cin >> name;
+				addNode(adjacencyMatrix, nodeList, numNodes, name);
+				break;
+			};
 
-	print_adj(adjacencyMatrix, numNodes);
+			case 'E': {
+				std::cout << "Vertex A name: ";
+				char* aName = new char[256];
+				std::cin >> aName;
+
+				std::cout << "Vertex B name: ";
+				char* bName = new char[256];
+				std::cin >> bName;
+
+				int indA = -1;
+				int indB = -1;
+
+				
+				for(int i = 0; i < numNodes; i++){
+					if(strcmp(aName, nodeList[i]->label) == 0){
+						indA = i;
+					}
+					if(strcmp(bName, nodeList[i]->label) == 0){
+						indB = i;
+					}
+
+				}
+
+				if(indA == -1 || indB == -1){
+					std::cout << "Could not find one (or more) nodes.\n";
+					break;
+				}
+
+				std::cout << "Weight: ";
+				int weight;
+				std::cin >> weight;
+
+				setEdge(adjacencyMatrix, nodeList, numNodes, indA, indB, weight);
+				break;
+			};
+			
+			case 'X': {
+				std::cout << "Vertex name: ";
+				char* vertexName = new char[256];
+				std::cin >> vertexName;
+				//removeNode(adjacencyMatrix, nodeList, numNodes, vertexName);
+				
+				int vertexNum = -1;
+				for(int i = 0; i < numNodes; i++){
+					if(strcmp(vertexName, nodeList[numNodes]->label) == 0){
+						vertexNum = i;	
+					}
+				}
+
+				if(vertexNum == -1){
+					std::cout << "Could not find node\n";
+				}
+
+				removeNode(adjacencyMatrix, numNodes, nodeList, vertexNum);
+				break;
+			};
+
+			case 'Y': {
+				std::cout << "Vertex A name: ";
+				char* aName = new char[256];
+				std::cin >> aName;
+
+				std::cout << "Vertex B name: ";
+				char* bName = new char[256];
+				std::cin >> bName;
+
+				int indA = -1;
+				int indB = -1;
+
+				
+				for(int i = 0; i < numNodes; i++){
+					if(strcmp(aName, nodeList[i]->label) == 0){
+						indA = i;
+					}
+					if(strcmp(bName, nodeList[i]->label) == 0){
+						indB = i;
+					}
+
+				}
+
+				if(indA == -1 || indB == -1){
+					std::cout << "Could not find one (or more) nodes.\n";
+					break;
+				}
+
+				setEdge(adjacencyMatrix, nodeList, numNodes, indA, indB, 0);
+
+				break;
+			};
+
+			case 'A': {
+				print_adj(adjacencyMatrix, numNodes, nodeList);
+				break;
+			};
+
+
+		}
+
+
+
+	}
+
+
 
 }
